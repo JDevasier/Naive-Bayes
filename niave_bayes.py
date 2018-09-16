@@ -38,7 +38,7 @@ def naive_bayes(train_file, test_file):
     predictions = makePredictions(classes, gaussians, test_data)
     acc = checkAccuracy(test_data[:, -1], predictions)
 
-    print("Classification Accuracy = ", acc)
+    print("Classification Accuracy = {:4.6f}".format(acc))
 
 
 def checkAccuracy(real, predictions):
@@ -105,9 +105,7 @@ def probabilityClass(classes, class_num):
 def getAllClassGaussians(classes):
     gaussians = {}
 
-    start = list(classes.keys())[0]
-    end = list(classes.keys())[-1]
-    for cl in range(start, end + 1):
+    for cl in np.unique(list(classes.keys())):
         gaussians[cl] = getClassGaussians(classes, cl)
 
     return gaussians
@@ -117,6 +115,7 @@ def getAllClassGaussians(classes):
 
 def getClassGaussians(classes, class_num):
     class_gaussians = []
+
     for dimension in range(np.shape(classes[int(class_num)])[1] - 1):
         gauss = getGaussian(classes[class_num], dimension)
         class_gaussians.append(gauss)
@@ -135,10 +134,8 @@ def separateClasses(data):
     global num_classes
 
     last = 0
-    start = data[0][-1]
-    end = data[-1][-1]
-    for i in range(int(start), int(end + 1)):
-        print(i)
+    for i in np.unique(data[:, -1]):
+        i = int(i)
         size = np.where(data[:, -1] == i)[0][-1]
         separated[i] = data[last:size]
         last = size + 1
