@@ -24,8 +24,6 @@ def naive_bayes(train_file, test_file):
 
     global num_classes
     num_classes = int(training_data[-1][-1] + 1 - training_data[0][-1])
-    # print("@@@@@@@@@@@@", num_classes, training_data,
-    # training_data[-1][-1] + 1 - training_data[-1][0])
 
     global num_observations
     num_observations = np.shape(training_data)[0]
@@ -35,11 +33,38 @@ def naive_bayes(train_file, test_file):
     test_data = loadFile(test_file)
     gaussians = getAllClassGaussians(classes)
 
-    predictions = makePredictions(classes, gaussians, test_data)
-    acc = checkAccuracy(test_data[:, -1], predictions)
+    
 
-    print("Classification Accuracy = ", acc)
+    calculateProbability(classes, gaussians, test_data[0])
 
+    #predictions = makePredictions(classes, gaussians, test_data)
+    #acc = checkAccuracy(test_data[:, -1], predictions)
+
+    #print("Classification Accuracy = ", acc)
+
+def calculateProbability(classes, gaussians, obs):
+    denom = 0
+    for cl_num in classes.keys():
+        denom += probGivenClass(obs, cl_num, gaussians) * classFrequency(classes, cl_num)
+
+    max_prob = -1
+    max_class = 0
+    for cl_num in classes.keys():
+        prob = probGivenClass(obs, cl_num, gaussians) * classFrequency(classes, cl_num)
+        prob = prob / denom
+        if (prob > max_prob):
+            max_prob = prob
+            max_class = cl_num
+
+def classFrequency(classes, cl_num):
+    return np.shape(classes[cl_num])[0] / num_observations
+
+def probGivenClass(obs, cl_num, gaussians):
+    prob_density = 1
+    for col in range(len(gaussians[cl_num])):
+        dens = calculate(obs[col], gaussians[cl_num][col][0], gaussians[cl_num][col][1])
+        prob_density *= dens
+    return prob_density
 
 def checkAccuracy(real, predictions):
     right = 0
@@ -48,7 +73,7 @@ def checkAccuracy(real, predictions):
             right += 1
     return right / len(real)
 
-
+#todo: divide each probability by probability of an observation in each class (SUM RULE)
 def makePredictions(classes, gaussians, test_data):
     observations = []
     for i in range(len(test_data)):
